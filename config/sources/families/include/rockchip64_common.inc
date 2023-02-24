@@ -198,7 +198,11 @@ uboot_custom_postprocess() {
 		[[ ! -f "${SPL_BIN_PATH}" ]] && exit_with_error "DDR_BLOB ${SPL_BIN_PATH} does not exist for scenario ${BOOT_SCENARIO}"
 
 		display_alert "mkimage for '${BOOT_SOC}' for scenario ${BOOT_SCENARIO}" "SPL_BIN_PATH: ${SPL_BIN_PATH}" "debug"
-		run_host_command_logged tools/mkimage -n "${BOOT_SOC}" -T rksd -d "${SPL_BIN_PATH}:spl/u-boot-spl.bin" idbloader.img
+		if [[ $BOOT_SOC == "rk3566" ]]; then
+			run_host_command_logged tools/mkimage -n rk3568 -T rksd -d "${SPL_BIN_PATH}:spl/u-boot-spl.bin" idbloader.img
+		else
+			run_host_command_logged tools/mkimage -n "${BOOT_SOC}" -T rksd -d "${SPL_BIN_PATH}:spl/u-boot-spl.bin" idbloader.img
+		fi
 
 	elif [[ $BOOT_SCENARIO == "only-blobs" ]]; then
 
@@ -213,7 +217,7 @@ uboot_custom_postprocess() {
 	fi
 
 	if [[ $BOOT_SUPPORT_SPI == yes ]]; then
-		if [[ $BOARD == "rock-3a" ]] || [[ $BOARD == "rock-5b" ]] || [[ $BOARD == "orangepi5" ]]; then
+		if [[ $BOARD == "rock-3a" ]] || [[ $BOARD == "rock-5b" ]] || [[ $BOARD == "orangepi5" ]] || [[ $BOARD == "radxa-cm3" ]]; then
 			dd if=/dev/zero of=rkspi_loader.img bs=1M count=0 seek=16
 			/sbin/parted -s rkspi_loader.img mklabel gpt
 			/sbin/parted -s rkspi_loader.img unit s mkpart idbloader 64 7167
